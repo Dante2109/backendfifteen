@@ -20,7 +20,7 @@ userRouter.post("/register",async(req,res)=>{
     try {
         let data= await UserModel.find({email:body.email})
         if(data.length){
-            res.status(401)
+            res.status(401).send("Use different email Id")
         }else{
             bcrypt.hash(body.password,5,(err,hash)=>{
                 if(hash){
@@ -28,7 +28,7 @@ userRouter.post("/register",async(req,res)=>{
                     user.save();
                     res.send("User has been registered")
                 }else{
-                    res.status(402)
+                    res.status(402).send("Error")
                 }
             })
         }
@@ -40,19 +40,20 @@ userRouter.post("/register",async(req,res)=>{
 
 userRouter.post("/login",async(req,res)=>{
     let body=req.body;
+    console.log("heklo")
     try {
         let data= await UserModel.find({email:body.email})
         if(data.length){
-            bcrypt.compare(body.password,data[0].password,(err,result)=>{
+            bcrypt.compare(body.password,data[0].password,async(err,result)=>{
                 if(result){
                     const token=jwt.sign({userId:data[0]._id},"shh")
                     res.send({msg:"User has been successfully registered",token})
                 }else{
-                    res.status(406)
+                    res.status(406).send("Wrong Credentials")
                 }
             })
         }else{
-            res.status(402)
+            res.status(402).send("Wrong Credentials")
         }
     } catch (error) {
         res.send(error)
